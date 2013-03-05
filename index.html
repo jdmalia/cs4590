@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Jason's Synth Template</title>
+
+	<!-- Set up Web MIDI polyfill -->
+    <script src='http://cwilso.github.com/WebMIDIAPIShim/WebMIDIAPI.js'></script>
+
+    <script src="/Users/jason/Documents/workspace/CS4590HW2/midi.js"></script>
+    <script src="/Users/jason/Documents/workspace/CS4590HW2/synth.js"></script>
+    <script src="/Users/jason/Documents/workspace/CS4590HW2/pointerevents.js"></script>
+ 
+	<style>
+	body { background-color: #999999; overflow: hidden; font: 12px 'Syncopate', sans-serif;}
+    #synthbox { 
+        position:relative; width: 895px; height: 350px; padding-left: 15px; padding-top: 15px; background: #222222; border: 3px solid blue; border-radius: 10px;}
+    .loaded#synthbox { border-color: #AAA;}
+    .error#synthbox { border-color: red;}
+    #generator {float: left; postion:absolute; width: 168px; height: 290px; margin-right: 15px; padding: 20px; background: #6C6C6C; border-radius: 5px;}
+    #keybox {width:910px; text-align: center;}
+    #blackkeys { position: absolute; z-index: 2; padding-left: 10px; margin-left: 41px;}
+    .key { display:inline-block; }
+    .black { background: black; width: 40px; height: 150px; margin: 0px 11px; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; }
+    .spacer { display:inline-block; width: 62px; height: 150px; margin: }
+    .white { background: white; width: 60px; height: 250px; border: 1px solid black; border-bottom-right-radius: 5px; border-bottom-left-radius: 5px; }
+    .pressed { background: gray }
+    #githubnotice { width:910px; text-align: center; font-size: 14px; margin-top: 10px; font-weight: bold;}
+    #MIDIPlugin { visibility: hidden; }
+	</style>
+</head>
+
+<body>
+    <div id="synthbox">
+        <div id="generator">
+            <div style="postion:absolute">
+                <font color="white">
+                <strong>GENERATOR 1</strong><br>
+                 <br>
+                <input id="on0" type="radio" name="onoff0" value="ON" onclick="generators[0].changeOn(0)"/> ON 
+                <input id="off0" type="radio" name="onoff0" value="OFF" onclick="defaultSettings(0)" checked/> OFF <br><br><br>
+                <b><i>Wave Type:</i></b><br>
+                <input id="sine0" type="radio" name="wave0" value="Sine" onclick="generators[0].changeWave(Wave.SINE)" checked/> Sine <br>
+                <input id="sawtooth0" type="radio" name="wave0" value="Sawtooth" onclick="generators[0].changeWave(Wave.SAWTOOTH)" /> Sawtooth <br>
+                <input id="triangle0" type="radio" name="wave0" value="Triangle" onclick="generators[0].changeWave(Wave.TRIANGLE)" /> Triangle <br> 
+                <input id="noise0" type="radio" name="wave0" value="Noise" onclick="generators[0].changeWave(Wave.NOISE)" /> Noise <br>
+                <br><br>
+                A&#160;<input id="attack0" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="7" onclick="generators[0].changeADSR()" /><br>
+                D&#160;<input id="decay0" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="15" onclick="generators[0].changeADSR()" /><br>
+                S&#160;<input id="sustain0" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="50" onclick="generators[0].changeADSR()" /><br> 
+                R&#160;<input id="release0" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="20" onclick="generators[0].changeADSR()" /><br>
+                <br><br>
+                 <input id="ring0" type="checkbox" name="ring0" onclick="generators[0].changeRing()"/><i> Ring Modulation</i><br>
+                </font>
+             </div> <!-- End of Generator 1 -->
+        </div> <!-- End of Generator 1 BOX -->
+        <div id="generator">
+            <div style="postion:absolute">
+                <font color="white">
+                <strong>GENERATOR 2</strong><br>
+                 <br>
+                <input id="on1" type="radio" name="onoff1" value="ON" onclick="generators[1].changeOn(1)" /> ON 
+                <input id="off1" type="radio" name="onoff1" value="OFF" onclick="defaultSettings(1)" checked /> OFF <br><br><br>
+                <b><i>Wave Type:</i></b><br>
+                <input id="sine1" type="radio" name="wave1" value="Sine" onclick="generators[1].changeWave(Wave.SINE)" checked/> Sine <br>
+                <input id="sawtooth1" type="radio" name="wave1" value="Sawtooth" onclick="generators[1].changeWave(Wave.SAWTOOTH)" /> Sawtooth <br>
+                <input id="triangle1" type="radio" name="wave1" value="Triangle" onclick="generators[1].changeWave(Wave.TRIANGLE)" /> Triangle <br> 
+                <input id="noise1" type="radio" name="wave1" value="Noise" onclick="generators[1].changeWave(Wave.NOISE)" /> Noise <br>
+                <br><br>
+                A&#160;<input id="attack1" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="7" onclick="generators[1].changeADSR()" /><br>
+                D&#160;<input id="decay1" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="15" onclick="generators[1].changeADSR()" /><br>
+                S&#160;<input id="sustain1" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="50" onclick="generators[1].changeADSR()" /><br> 
+                R&#160;<input id="release1" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="20" onclick="generators[1].changeADSR()" /><br>
+                <br><br>
+                 <input id="ring1" type="checkbox" name="ring1" onclick="generators[1].changeRing()"/><i> Ring Modulation</i><br>
+                </font>
+             </div> <!-- End of Generator 2 -->
+         </div> <!-- End of Generator 2 BOX -->
+         <div id="generator">
+            <div style="postion:absolute">
+                <font color="white">
+                <strong>GENERATOR 3</strong><br>
+                 <br>
+                <input id="on2" type="radio" name="onoff2" value="ON" onclick="generators[2].changeOn(2)" /> ON 
+                <input id="off2" type="radio" name="onoff2" value="OFF" onclick="defaultSettings(2)" checked/> OFF <br><br><br>
+                <b><i>Wave Type:</i></b><br>
+                <input id="sine2" type="radio" name="wave2" value="Sine" onclick="generators[2].changeWave(Wave.SINE)" checked/> Sine <br>
+                <input id="sawtooth2" type="radio" name="wave2" value="Sawtooth" onclick="generators[2].changeWave(Wave.SAWTOOTH)" /> Sawtooth <br>
+                <input id="triangle2" type="radio" name="wave2" value="Triangle" onclick="generators[2].changeWave(Wave.TRIANGLE)" /> Triangle <br> 
+                <input id="noise2" type="radio" name="wave2" value="Noise" onclick="generators[2].changeWave(Wave.NOISE)" /> Noise <br>
+                <br><br>
+                A&#160;<input id="attack2" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="7" onclick="generators[2].changeADSR()" /><br>
+                D&#160;<input id="decay2" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="15" onclick="generators[2].changeADSR()" /><br>
+                S&#160;<input id="sustain2" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="50" onclick="generators[2].changeADSR()" /><br> 
+                R&#160;<input id="release2" type="range" style="height: 5px; width: 145px" min="0.0" max="100.0" step="1" value ="20" onclick="generators[2].changeADSR()" /><br>
+                <br><br>
+                <input id="ring2" type="checkbox" name="ring2" onclick="generators[2].changeRing()"/><i> Ring Modulation</i><br>
+                </font>
+             </div> <!-- End of Generator 3 -->
+         </div> <!-- End of Generator 3 BOX -->
+         <div id="generator">
+            <div style="postion:absolute">
+                <font color="white">
+                <strong>MASTER CONTROL</strong><br>
+                 <br>
+                 <i>Volume:</i>
+                 <input id="vol" type="range" style="height: 5px; width: 110px" min="0.0" max="1.0" step=".01" value ="0.75" /><br>
+                 <br>
+                 <br>
+                 <b><i>Filters:</i></b><br>
+                 <input id="nofilter" type="radio" name="filter" onclick="noFilter()" checked/> None <br>
+                 <input id="lpf" type="radio" name="filter" onclick="LPF()" /> Low Pass: 800 Hz <br>
+                 <input id="hpf" type="radio" name="filter" onclick="HPF()" /> High Pass: 300 Hz <br>
+                 <input id="bpf" type="radio" name="filter" onclick="BAND()" /> Band Pass: 300-800 Hz <br> 
+                 </font>
+             </div> <!-- End of Master Control  -->
+         </div> <!-- End of Master Control BOX -->
+    </div> <!-- End of Synth box -->
+    <div id="keybox">
+        <div id="blackkeys">
+            <span id="k61" class="black key"></span><span id="k63" class="black key"></span><span class="spacer"></span><span id="k66" class="black key"></span><span id="k68" class="black key"></span><span id="k70" class="black key"></span><span class="spacer"></span><span id="k73" class="black key"></span><span id="k75" class="black key"></span><span class="spacer"></span><span id="k78" class="black key"></span><span id="k80" class="black key"></span><span id="k82" class="black key"></span>
+        </div>
+        <span id="k60" class="white key"></span><span id="k62" class="white key"></span><span id="k64" class="white key"></span><span id="k65" class="white key"></span><span id="k67" class="white key"></span><span id="k69" class="white key"></span><span id="k71" class="white key"></span><span id="k72" class="white key"></span><span id="k74" class="white key"></span><span id="k76" class="white key"></span><span id="k77" class="white key"></span><span id="k79" class="white key"></span><span id="k81" class="white key"></span><span id="k83" class="white key"></span>
+    </div>
+    <div id="githubnotice"><a href="http://github.com/cwilso/SynthTemplate/">Fork my code on Github</a></div>
+    <select id="midiIn"><option>-no MIDI-</option></select>
+    <select id="kbd_oct"><option>+3</option><option>+2</option><option>+1</option><option selected>normal</option><option>-1</option><option>-2</option><option>-3</option></select>
+    <div id="MIDIPlugin"></div>
+
+
+
+
+</body>
+</html>
